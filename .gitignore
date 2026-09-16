@@ -1,0 +1,9 @@
+.DS_Store
+__pycache__/
+*.py[cod]
+
+# Large local Whisper models are installed separately and never committed.
+/models/
+
+# Recordings, transcripts, summaries, and logs can contain private material.
+/results/
