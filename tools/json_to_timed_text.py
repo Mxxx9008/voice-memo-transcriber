@@ -11,7 +11,7 @@ def format_timestamp(value: str) -> str:
 
 
 def convert(source: Path, target: Path) -> None:
-    payload = json.loads(source.read_text(encoding="utf-8"))
+    payload = json.loads(source.read_bytes().decode("utf-8", errors="replace"))
     lines: list[str] = []
 
     for segment in payload.get("transcription", []):

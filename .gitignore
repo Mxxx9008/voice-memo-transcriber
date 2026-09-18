@@ -7,3 +7,6 @@ __pycache__/
 
 # Recordings, transcripts, summaries, and logs can contain private material.
 /results/
+
+# Background launcher logs can contain local file paths.
+/jobs/

@@ -9,6 +9,8 @@
 - 接收 `.qta`、`.m4a`、`.mp3`、`.wav` 等 `ffmpeg` 可解码的音频文件
 - 自动转换为 16 kHz 单声道中间音频
 - 使用 `whisper.cpp` 离线进行中文识别
+- 默认以后台任务运行，不需要让终端或 AI Agent 持续等待
+- 默认使用 4 个 CPU 线程的均衡模式，兼顾识别质量与发热
 - 保存带时间戳的完整转写和原始 JSON
 - 保留原始录音和运行日志
 - 生成可继续填充的会议总结模板
@@ -51,7 +53,21 @@
 ./voice-convert.sh "/path/to/语音备忘录.qta"
 ```
 
-脚本执行完成后会输出本次结果目录的路径。结果默认保存在：
+命令会立即返回 `launchd` 任务名称、结果目录和任务日志路径。转写由 macOS 后台服务托管，不再需要 Codex 或终端会话持续等待；任务结束后会自动从 `launchd` 注销。
+
+可以随时查看任务状态：
+
+```bash
+cat "results/<任务目录>/状态.txt"
+```
+
+状态为 `处理中`、`完成` 或 `失败（退出码：N）`。需要调试时，可显式使用前台模式：
+
+```bash
+./voice-convert.sh --foreground "/path/to/语音备忘录.qta"
+```
+
+结果默认保存在：
 
 ```text
 results/
@@ -60,7 +76,8 @@ results/
     ├── 完整转写_带时间戳.txt
     ├── 原始识别.json
     ├── 会议总结.md
-    └── 运行日志.log
+    ├── 运行日志.log
+    └── 状态.txt
 ```
 
 `voice-convert.sh` 只生成会议总结的结构化模板，不会自动调用云端 AI 生成总结。可以将完整转写交给 Codex 或其他工具进一步整理。
@@ -75,7 +92,7 @@ results/
 | `WHISPER_BIN` | `whisper-cli` 可执行文件 | `/opt/homebrew/opt/whisper.cpp/bin/whisper-cli` |
 | `FFMPEG_BIN` | `ffmpeg` 可执行文件 | `PATH` 中的 `ffmpeg` |
 | `PYTHON_BIN` | Python 3 可执行文件 | `PATH` 中的 `python3` |
-| `VOICE_THREADS` | 识别线程数 | `8` |
+| `VOICE_THREADS` | 识别线程数 | `4` |
 | `VOICE_CONVERT_HOME` | 结果根目录 | 项目目录 |
 
 例如，Intel Mac 或自定义 Homebrew 路径可以这样运行：
@@ -95,7 +112,7 @@ python3 -m unittest discover -s tests -v
 
 ## 隐私与仓库内容
 
-`models/` 和 `results/` 已经加入 `.gitignore`，因此本地模型、录音、转写、总结和日志不会被常规 Git 操作提交。公开分享仓库前仍建议使用 `git status` 检查待提交文件。
+`models/`、`results/` 和 `jobs/` 已经加入 `.gitignore`，因此本地模型、录音、转写、总结和日志不会被常规 Git 操作提交。公开分享仓库前仍建议使用 `git status` 检查待提交文件。
 
 ## 当前限制
 
